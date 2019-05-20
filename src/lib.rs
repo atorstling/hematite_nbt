@@ -1,6 +1,7 @@
 //! MC Named Binary Tag type.
 
 extern crate byteorder;
+extern crate byteordered;
 extern crate flate2;
 extern crate linked_hash_map;
 
