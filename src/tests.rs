@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use linked_hash_map::LinkedHashMap as HashMap;
 use std::io;
 use std::fs::File;
 

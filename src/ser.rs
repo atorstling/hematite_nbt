@@ -6,6 +6,7 @@ use serde;
 use serde::ser;
 use flate2::Compression;
 use flate2::write::{GzEncoder, ZlibEncoder};
+use byteordered::{ByteOrdered, Endianness};
 
 use raw;
 
@@ -75,9 +76,9 @@ impl<'a, W> Encoder<'a, W> where W: io::Write {
         try!(raw::write_bare_byte(&mut self.writer, tag));
         match header {
             None =>
-                raw::write_bare_short(&mut self.writer, 0).map_err(From::from),
+                raw::write_bare_short( 0, ByteOrdered::runtime(&mut self.writer, Endianness::Big)).map_err(From::from),
             Some(h) =>
-                raw::write_bare_string(&mut self.writer, h).map_err(From::from),
+                raw::write_bare_string(&mut self.writer, h, ByteOrdered::runtime(dst, Endianness::Big)).map_err(From::from),
         }
     }
 }
@@ -284,7 +285,7 @@ impl<'a, 'b, W> serde::Serializer for &'a mut InnerEncoder<'a, 'b, W> where W: i
     #[inline]
     fn serialize_i16(self, value: i16) -> Result<()> {
         try!(self.write_header(0x02));
-        raw::write_bare_short(&mut self.outer.writer, value)
+        raw::write_bare_short(&mut self.outer.writer, value, ByteOrdered::runtime(dst, Endianness::Big))
             .map_err(From::from)
     }
 
@@ -319,7 +320,7 @@ impl<'a, 'b, W> serde::Serializer for &'a mut InnerEncoder<'a, 'b, W> where W: i
     #[inline]
     fn serialize_str(self, value: &str) -> Result<()> {
         try!(self.write_header(0x08));
-        raw::write_bare_string(&mut self.outer.writer, value)
+        raw::write_bare_string(&mut self.outer.writer, value, ByteOrdered::runtime(dst, Endianness::Big))
             .map_err(From::from)
     }
 
@@ -405,7 +406,7 @@ impl<'a, 'b: 'a, W: 'a> serde::Serializer for &'a mut MapKeyEncoder<'a, 'b, W>
     );
 
     fn serialize_str(self, value: &str) -> Result<()> {
-        raw::write_bare_string(&mut self.outer.writer, value)
+        raw::write_bare_string(&mut self.outer.writer, value, ByteOrdered::runtime(dst, Endianness::Big))
     }
 }
 

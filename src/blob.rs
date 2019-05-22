@@ -4,6 +4,7 @@ use std::io;
 use std::ops::Index;
 
 use byteorder::WriteBytesExt;
+use byteordered::{ByteOrdered, Endianness};
 use flate2::Compression;
 use flate2::read::{GzDecoder, ZlibDecoder};
 use flate2::write::{GzEncoder, ZlibEncoder};
@@ -56,14 +57,17 @@ impl Blob {
     pub fn from_reader<R>(src: &mut R) -> Result<Blob>
         where R: io::Read
     {
-        let (tag, title) = try!(raw::emit_next_header(src));
+        // TODO: send in endianness
+        let mut bo = ByteOrdered::runtime(src, Endianness::Big);
+        let (tag, title) = try!(raw::emit_next_header(&mut bo));
         // Although it would be possible to read NBT format files composed of
         // arbitrary objects using the current API, by convention all files
         // have a top-level Compound.
         if tag != 0x0a {
             return Err(Error::NoRootCompound);
         }
-        let content = try!(Value::from_reader(tag, src));
+        // TODO: send in endianness
+        let content = try!(Value::from_reader(tag, bo.inner_mut()));
         match content {
             Value::Compound(map) => Ok(Blob { title: title, content: map }),
             _ => Err(Error::NoRootCompound),
@@ -90,17 +94,18 @@ impl Blob {
 
     /// Writes the binary representation of this `Blob` to an `io::Write`
     /// destination.
-    pub fn to_writer<W>(&self, mut dst: &mut W) -> Result<()>
+    pub fn to_writer<W>(&self, dst: &mut W) -> Result<()>
         where W: io::Write
     {
-        dst.write_u8(0x0a)?;
-        raw::write_bare_string(&mut dst, &self.title)?;
+        let mut bo = ByteOrdered::runtime(dst, Endianness::Big);
+        bo.write_u8(0x0a)?;
+        raw::write_bare_string(&self.title, &mut bo)?;
         for (name, ref nbt) in self.content.iter() {
-            dst.write_u8(nbt.id())?;
-            raw::write_bare_string(&mut dst, name)?;
-            nbt.to_writer(&mut dst)?;
+            bo.write_u8(nbt.id())?;
+            raw::write_bare_string( name, &mut bo)?;
+            nbt.to_writer(bo.inner_mut())?;
         }
-        raw::close_nbt(&mut dst)
+        raw::close_nbt(bo.into_inner())
     }
 
     /// Writes the binary representation of this `Blob`, compressed using
