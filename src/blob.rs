@@ -54,11 +54,11 @@ impl Blob {
     }
 
     /// Extracts an `Blob` object from an `io::Read` source.
-    pub fn from_reader<R>(src: R) -> Result<Blob>
+    pub fn from_reader<R>(src: R, endianness: Endianness) -> Result<Blob>
         where R: io::Read
     {
         // TODO: send in endianness
-        let mut bo = ByteOrdered::runtime(src, Endianness::Big);
+        let mut bo = ByteOrdered::runtime(src, endianness);
         let (tag, title) = try!(raw::emit_next_header(&mut bo));
         // Although it would be possible to read NBT format files composed of
         // arbitrary objects using the current API, by convention all files
@@ -76,28 +76,28 @@ impl Blob {
 
     /// Extracts an `Blob` object from an `io::Read` source that is
     /// compressed using the Gzip format.
-    pub fn from_gzip_reader<R>(src: &mut R) -> Result<Blob>
+    pub fn from_gzip_reader<R>(src: &mut R, endianness: Endianness) -> Result<Blob>
         where R: io::Read
     {
         // Reads the gzip header, and fails if it is incorrect.
         let mut data = try!(GzDecoder::new(src));
-        Blob::from_reader(&mut data)
+        Blob::from_reader(&mut data, endianness)
     }
 
     /// Extracts an `Blob` object from an `io::Read` source that is
     /// compressed using the zlib format.
-    pub fn from_zlib_reader<R>(src: &mut R) -> Result<Blob>
+    pub fn from_zlib_reader<R>(src: &mut R, endianness: Endianness) -> Result<Blob>
         where R: io::Read
     {
-        Blob::from_reader(&mut ZlibDecoder::new(src))
+        Blob::from_reader(&mut ZlibDecoder::new(src), endianness)
     }
 
     /// Writes the binary representation of this `Blob` to an `io::Write`
     /// destination.
-    pub fn to_writer<W>(&self, dst: W) -> Result<()>
+    pub fn to_writer<W>(&self, dst: W, endianness: Endianness) -> Result<()>
         where W: io::Write
     {
-        let mut bo = ByteOrdered::runtime(dst, Endianness::Big);
+        let mut bo = ByteOrdered::runtime(dst, endianness);
         bo.write_u8(0x0a)?;
         raw::write_bare_string(&self.title, &mut bo)?;
         for (name, ref nbt) in self.content.iter() {
@@ -110,18 +110,18 @@ impl Blob {
 
     /// Writes the binary representation of this `Blob`, compressed using
     /// the Gzip format, to an `io::Write` destination.
-    pub fn to_gzip_writer<W>(&self, dst: &mut W) -> Result<()>
+    pub fn to_gzip_writer<W>(&self, dst: &mut W, endianness: Endianness) -> Result<()>
         where W: io::Write
     {
-        self.to_writer(&mut GzEncoder::new(dst, Compression::Default))
+        self.to_writer(&mut GzEncoder::new(dst, Compression::Default), endianness)
     }
 
     /// Writes the binary representation of this `Blob`, compressed using
     /// the Zlib format, to an `io::Write` dst.
-    pub fn to_zlib_writer<W>(&self, dst: &mut W) -> Result<()>
+    pub fn to_zlib_writer<W>(&self, dst: &mut W, endianness: Endianness) -> Result<()>
         where W: io::Write
     {
-        self.to_writer(&mut ZlibEncoder::new(dst, Compression::Default))
+        self.to_writer(&mut ZlibEncoder::new(dst, Compression::Default), endianness)
     }
 
     /// Insert an `Value` with a given name into this `Blob` object. This
