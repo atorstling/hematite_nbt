@@ -14,56 +14,55 @@ use error::{Error, Result};
 ///
 /// This function writes a single `0x00` byte to the `io::Write` destination,
 /// which in the NBT format indicates that an open Compound is now closed.
-pub fn close_nbt<W>(dst: &mut W) -> Result<()>
+pub fn close_nbt<W>(bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
     where W: io::Write {
-
-    dst.write_u8(0x00).map_err(From::from)
+    bo.write_u8(0x00).map_err(From::from)
 }
 
 #[inline]
-pub fn write_bare_byte<W>(dst: &mut W, value: i8) -> Result<()>
+pub fn write_bare_byte<W>(value: i8, bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
-    dst.write_i8(value).map_err(From::from)
+    bo.write_i8(value).map_err(From::from)
 }
 
 #[inline]
-pub fn write_bare_short<W>(value: i16, bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_short<W>(value: i16, bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     bo.write_i16(value).map_err(From::from)
 }
 
 #[inline]
-pub fn write_bare_int<W>(value: i32, bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_int<W>(value: i32, bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     bo.write_i32(value).map_err(From::from)
 }
 
 #[inline]
-pub fn write_bare_long<W>(value: i64, bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_long<W>(value: i64, bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     bo.write_i64(value).map_err(From::from)
 }
 
 #[inline]
-pub fn write_bare_float<W>(value: f32, bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_float<W>(value: f32, bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     bo.write_f32(value).map_err(From::from)
 }
 
 #[inline]
-pub fn write_bare_double<W>(value: f64, bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_double<W>(value: f64, bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     bo.write_f64(value).map_err(From::from)
 }
 
 #[inline]
-pub fn write_bare_byte_array<W>(value: &[i8], bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_byte_array<W>(value: &[i8], bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     try!(bo.write_i32(value.len() as i32));
@@ -74,7 +73,7 @@ pub fn write_bare_byte_array<W>(value: &[i8], bo: &mut ByteOrdered<&mut W, Endia
 }
 
 #[inline]
-pub fn write_bare_int_array<W>(value: &[i32], bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_int_array<W>(value: &[i32], bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     try!(bo.write_i32(value.len() as i32));
@@ -85,7 +84,7 @@ pub fn write_bare_int_array<W>(value: &[i32], bo: &mut ByteOrdered<&mut W, Endia
 }
 
 #[inline]
-pub fn write_bare_long_array<W>(value: &[i64], bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_long_array<W>(value: &[i64], bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     bo.write_i32(value.len() as i32)?;
@@ -96,7 +95,7 @@ pub fn write_bare_long_array<W>(value: &[i64], bo: &mut ByteOrdered<&mut W, Endi
 }
 
 #[inline]
-pub fn write_bare_string<W>(value: &str, bo: &mut ByteOrdered<&mut W, Endianness>) -> Result<()>
+pub fn write_bare_string<W>(value: &str, bo: &mut ByteOrdered<W, Endianness>) -> Result<()>
    where W: io::Write
 {
     try!(bo.write_u16(value.len() as u16));
@@ -107,7 +106,7 @@ pub fn write_bare_string<W>(value: &str, bo: &mut ByteOrdered<&mut W, Endianness
 ///
 /// This function will also return the `TAG_End` byte and an empty name if it
 /// encounters it.
-pub fn emit_next_header<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<(u8, String)>
+pub fn emit_next_header<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<(u8, String)>
     where R: io::Read
 {
     let tag  = try!(bo.read_u8());
@@ -122,49 +121,49 @@ pub fn emit_next_header<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<(
 }
 
 #[inline]
-pub fn read_bare_byte<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<i8>
+pub fn read_bare_byte<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<i8>
     where R: io::Read
 {
     bo.read_i8().map_err(From::from)
 }
 
 #[inline]
-pub fn read_bare_short<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<i16>
+pub fn read_bare_short<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<i16>
     where R: io::Read
 {
     bo.read_i16().map_err(From::from)
 }
 
 #[inline]
-pub fn read_bare_int<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<i32>
+pub fn read_bare_int<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<i32>
     where R: io::Read
 {
     bo.read_i32().map_err(From::from)
 }
 
 #[inline]
-pub fn read_bare_long<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<i64>
+pub fn read_bare_long<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<i64>
     where R: io::Read
 {
     bo.read_i64().map_err(From::from)
 }
 
 #[inline]
-pub fn read_bare_float<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<f32>
+pub fn read_bare_float<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<f32>
     where R: io::Read
 {
     bo.read_f32().map_err(From::from)
 }
 
 #[inline]
-pub fn read_bare_double<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<f64>
+pub fn read_bare_double<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<f64>
     where R: io::Read
 {
     bo.read_f64().map_err(From::from)
 }
 
 #[inline]
-pub fn read_bare_byte_array<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<Vec<i8>>
+pub fn read_bare_byte_array<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<Vec<i8>>
     where R: io::Read
 {
     // FIXME: Is there a way to return [u8; len]?
@@ -178,7 +177,7 @@ pub fn read_bare_byte_array<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Resu
 }
 
 #[inline]
-pub fn read_bare_int_array<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<Vec<i32>>
+pub fn read_bare_int_array<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<Vec<i32>>
     where R: io::Read
 {
     // FIXME: Is there a way to return [i32; len]?
@@ -192,7 +191,7 @@ pub fn read_bare_int_array<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Resul
 }
 
 #[inline]
-pub fn read_bare_long_array<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<Vec<i64>>
+pub fn read_bare_long_array<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<Vec<i64>>
     where R: io::Read
 {
     let len = bo.read_i32()? as usize;
@@ -204,7 +203,7 @@ pub fn read_bare_long_array<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Resu
 }
 
 #[inline]
-pub fn read_bare_string<R>(bo: &mut ByteOrdered<&mut R, Endianness>) -> Result<String>
+pub fn read_bare_string<R>(bo: &mut ByteOrdered<R, Endianness>) -> Result<String>
     where R: io::Read
 {
     let len = try!(bo.read_u16()) as usize;

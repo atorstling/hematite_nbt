@@ -54,7 +54,7 @@ impl Blob {
     }
 
     /// Extracts an `Blob` object from an `io::Read` source.
-    pub fn from_reader<R>(src: &mut R) -> Result<Blob>
+    pub fn from_reader<R>(src: R) -> Result<Blob>
         where R: io::Read
     {
         // TODO: send in endianness
@@ -67,7 +67,7 @@ impl Blob {
             return Err(Error::NoRootCompound);
         }
         // TODO: send in endianness
-        let content = try!(Value::from_reader(tag, bo.inner_mut()));
+        let content = try!(Value::from_reader(tag, &mut bo));
         match content {
             Value::Compound(map) => Ok(Blob { title: title, content: map }),
             _ => Err(Error::NoRootCompound),
@@ -94,7 +94,7 @@ impl Blob {
 
     /// Writes the binary representation of this `Blob` to an `io::Write`
     /// destination.
-    pub fn to_writer<W>(&self, dst: &mut W) -> Result<()>
+    pub fn to_writer<W>(&self, dst: W) -> Result<()>
         where W: io::Write
     {
         let mut bo = ByteOrdered::runtime(dst, Endianness::Big);
@@ -103,9 +103,9 @@ impl Blob {
         for (name, ref nbt) in self.content.iter() {
             bo.write_u8(nbt.id())?;
             raw::write_bare_string( name, &mut bo)?;
-            nbt.to_writer(bo.inner_mut())?;
+            nbt.to_writer(&mut bo)?;
         }
-        raw::close_nbt(bo.into_inner())
+        raw::close_nbt(&mut bo)
     }
 
     /// Writes the binary representation of this `Blob`, compressed using
