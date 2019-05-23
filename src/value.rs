@@ -133,7 +133,6 @@ impl Value {
                 let len = try!(bo.read_i32()) as usize;
                 let mut buf = Vec::with_capacity(len);
                 for _ in 0..len {
-                    // TODO: Send down bo
                     buf.push(try!(Value::from_reader(id, bo)));
                 }
                 Ok(Value::List(buf))
@@ -143,7 +142,6 @@ impl Value {
                 loop {
                     let (id, name) = try!(raw::emit_next_header(bo));
                     if id == 0x00 { break; }
-                    // TODO: send down bo
                     let tag = try!(Value::from_reader(id, bo));
                     buf.insert(name, tag);
                 }

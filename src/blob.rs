@@ -57,7 +57,6 @@ impl Blob {
     pub fn from_reader<R>(src: R, endianness: Endianness) -> Result<Blob>
         where R: io::Read
     {
-        // TODO: send in endianness
         let mut bo = ByteOrdered::runtime(src, endianness);
         let (tag, title) = try!(raw::emit_next_header(&mut bo));
         // Although it would be possible to read NBT format files composed of
@@ -66,7 +65,6 @@ impl Blob {
         if tag != 0x0a {
             return Err(Error::NoRootCompound);
         }
-        // TODO: send in endianness
         let content = try!(Value::from_reader(tag, &mut bo));
         match content {
             Value::Compound(map) => Ok(Blob { title: title, content: map }),
