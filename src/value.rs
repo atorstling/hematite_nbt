@@ -1,7 +1,6 @@
 use std::fmt;
 use std::io;
 
-use byteorder::{BigEndian, WriteBytesExt, ReadBytesExt};
 use byteordered::{ByteOrdered, Endianness};
 use linked_hash_map::LinkedHashMap as HashMap;
 

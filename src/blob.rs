@@ -3,7 +3,6 @@ use std::fmt;
 use std::io;
 use std::ops::Index;
 
-use byteorder::WriteBytesExt;
 use byteordered::{ByteOrdered, Endianness};
 use flate2::Compression;
 use flate2::read::{GzDecoder, ZlibDecoder};

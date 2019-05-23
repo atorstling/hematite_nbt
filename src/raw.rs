@@ -1,11 +1,7 @@
 //! Primitive functions for serializing and deserializing NBT data.
 
-// (\w+)\.(\w+)::<BigEndian>
-// ByteOrdered::runtime($1, Endianness::Big).$2
-
 use std::io;
 
-use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use byteordered::{ByteOrdered, Endianness};
 
 use error::{Error, Result};

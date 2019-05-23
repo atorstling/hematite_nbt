@@ -92,7 +92,7 @@ impl StdError for Error {
 
     fn cause(&self) -> Option<&StdError> {
         match *self {
-            Error::IoError(ref e) => e.cause(),
+            Error::IoError(ref e) => e.source(),
             _ => None
         }
     }
